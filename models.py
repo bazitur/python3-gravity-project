@@ -18,7 +18,6 @@ class Dot(list):
     def dist(self, other):
         return euclidean(self, other)
 
-vectorize = lambda x, y: np.array((x, y))
 
 class Field:
     def __init__(self, dimensions, *initial_objects):
@@ -36,18 +35,21 @@ class Field:
             obj.calc(self.objects)
         
         for obj in self.objects:
-            obj.commit()
+            obj.refresh()
 
 
 class Object:
     """
     Abstract Object class.
     """
-    def __init__(self, mass, coords=(0, 0), acceleration=None, id=-1):
+    def __init__(self, mass, coords=(0, 0), acceleration=np.array((0., 0.)), id=-1):
         self.mass = mass
         self.center = Dot(coords)
         self.id = id
         self.acceleration = acceleration
+    
+    def __vectorize(self, obj):
+        return  np.array(obj.center) - np.array(self.center)
     
     def calc(self, objects):
         
@@ -55,17 +57,13 @@ class Object:
             if obj is not self:
                 distance = self.center.dist(obj.center)
                 force_scalar = CONST.G * self.mass * obj.mass / distance**2
-                unit_vector = vectorize(self.center, obj.center) / distance
+                unit_vector = self.__vectorize(obj) / distance
                 force_vector = force_scalar * unit_vector
-                self.acceleration = force_vector / self.mass
+                self.acceleration += force_vector / self.mass
         
-    def commit(self):
-        if self.acceleration is None:
-            raise ModelException("Failed to find calculated acceleration vector.")
-        else:
-            pass
-            # moving there
-            self.acceleration = None
+    def refresh(self):
+        print(self.id,": acceleration is:", self.acceleration)
+        # moving there somehow?
     
     def __repr__(self):
         return "<Object #{id} at ({0:.2f}; {1:.2f})>".format(*self.center, id=self.id)
