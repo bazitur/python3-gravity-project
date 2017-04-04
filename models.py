@@ -11,13 +11,7 @@ class ModelException(Exception):
     """
     pass
 
-class Dot(list):
-    def __init__(self, *args):
-        super().__init__(*args)
-    
-    def dist(self, other):
-        return euclidean(self, other)
-
+Dot = np.array
 
 class Field:
     def __init__(self, dimensions, *initial_objects):
@@ -42,37 +36,49 @@ class Object:
     """
     Abstract Object class.
     """
-    def __init__(self, mass, coords=(0, 0), acceleration=np.array((0., 0.)), id=-1):
+    def __init__(self, mass, coords=(0., 0.), speed=(0., 0.), id=-1):
         self.mass = mass
         self.center = Dot(coords)
         self.id = id
-        self.acceleration = acceleration
+        self.acceleration = np.array((0., 0.))
+        self.speed = speed
     
     def __vectorize(self, obj):
         return  np.array(obj.center) - np.array(self.center)
+    
+    def __distance(self, obj):
+        arr = self.center - obj.center
+        return (arr[0]**2 + arr[1]**2)**0.5
     
     def calc(self, objects):
         
         for obj in objects:
             if obj is not self:
-                distance = self.center.dist(obj.center)
+                distance = self.__distance(obj)
                 force_scalar = CONST.G * self.mass * obj.mass / distance**2
                 unit_vector = self.__vectorize(obj) / distance
                 force_vector = force_scalar * unit_vector
-                self.acceleration += force_vector / self.mass
+                self.acceleration = self.acceleration + force_vector/self.mass
         
     def refresh(self):
-        print(self.id,": acceleration is:", self.acceleration)
-        # moving there somehow?
+        self.speed = self.speed + (self.acceleration*CONST.TAU)
+        self.center = self.center + self.speed*CONST.TAU
     
     def __repr__(self):
         return "<Object #{id} at ({0:.2f}; {1:.2f})>".format(*self.center, id=self.id)
 
 
 if __name__ == "__main__":
-    a = Object(1, coords=(1, 0), id=1)
-    b = Object(10, coords=(20, 20), id=2)
+    from json import dump
+    a = Object(1, coords=(-391.24943188, 1373.38900234), speed=[69.24156472, -60.23113766], id=1)
+    b = Object(1000, coords=(300., 300.), id=2)
     f = Field((100, 100), a, b)
-    for _ in range(20):
-        print(a, b)
+    ans1, ans2 = [], []
+    for _ in range(500):
+        print(a.speed, a.center)
+        ans1.append(list(a.center))
+        ans2.append(list(b.center))
         f.epoch()
+    with open("data.json", "w") as doc:
+        dump({"ans1": ans1, "ans2": ans2}, doc)
+    import fast_render

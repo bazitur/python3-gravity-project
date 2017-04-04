@@ -16,7 +16,6 @@ game_display = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption(_title)
 clock = pygame.time.Clock()
 
-
 def main():
     def draw_environment():
         game_display.fill(white)
