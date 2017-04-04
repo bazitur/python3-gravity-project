@@ -5,6 +5,12 @@ import numpy as np
 import CONSTANTS as CONST
 from scipy.spatial.distance import euclidean
 
+class ModelException(Exception):
+    """
+    Generic class for gravity model exceptions.
+    """
+    pass
+
 class Dot(list):
     def __init__(self, *args):
         super().__init__(*args)
@@ -37,29 +43,36 @@ class Object:
     """
     Abstract Object class.
     """
-    def __init__(self, mass, coords=(0, 0), acceleration=(0, 0), id=-1):
+    def __init__(self, mass, coords=(0, 0), acceleration=None, id=-1):
         self.mass = mass
         self.center = Dot(coords)
-        self.acceleration = Dot(acceleration)
         self.id = id
+        self.acceleration = acceleration
     
     def calc(self, objects):
         
         for obj in objects:
             if obj is not self:
                 distance = self.center.dist(obj.center)
-                force = CONST.G * self.mass * obj.mass / distance**2
-                #unit_vector = 
+                force_scalar = CONST.G * self.mass * obj.mass / distance**2
+                unit_vector = vectorize(self.center, obj.center) / distance
+                force_vector = force_scalar * unit_vector
+                self.acceleration = force_vector / self.mass
         
     def commit(self):
-        pass
+        if self.acceleration is None:
+            raise ModelException("Failed to find calculated acceleration vector.")
+        else:
+            pass
+            # moving there
+            self.acceleration = None
     
     def __repr__(self):
         return "<Object #{id} at ({0:.2f}; {1:.2f})>".format(*self.center, id=self.id)
 
 
 if __name__ == "__main__":
-    a = Object(1, vector=(1, 0), id=1)
+    a = Object(1, coords=(1, 0), id=1)
     b = Object(10, coords=(20, 20), id=2)
     f = Field((100, 100), a, b)
     for _ in range(20):
