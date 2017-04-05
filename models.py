@@ -55,6 +55,8 @@ class Object:
         for obj in objects:
             if obj is not self:
                 distance = self.__distance(obj)
+                if distance == 0:
+                    raise ModelException("Objects collided.")
                 force_scalar = CONST.G * self.mass * obj.mass / distance**2
                 unit_vector = self.__vectorize(obj) / distance
                 force_vector = force_scalar * unit_vector
@@ -63,6 +65,7 @@ class Object:
     def refresh(self):
         self.speed = self.speed + (self.acceleration*CONST.TAU)
         self.center = self.center + self.speed*CONST.TAU
+        self.acceleration = np.array((0., 0.))
     
     def __repr__(self):
         return "<Object #{id} at ({0:.2f}; {1:.2f})>".format(*self.center, id=self.id)
@@ -70,11 +73,11 @@ class Object:
 
 if __name__ == "__main__":
     from json import dump
-    a = Object(1, coords=(-391.24943188, 1373.38900234), speed=[69.24156472, -60.23113766], id=1)
-    b = Object(1000, coords=(300., 300.), id=2)
+    a = Object(1, coords=(300., 0.), speed=[1., 10.], id=1)
+    b = Object(100, coords=(300., 300.), id=2)
     f = Field((100, 100), a, b)
     ans1, ans2 = [], []
-    for _ in range(500):
+    for _ in range(2000):
         print(a.speed, a.center)
         ans1.append(list(a.center))
         ans2.append(list(b.center))

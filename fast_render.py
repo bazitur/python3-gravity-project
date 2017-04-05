@@ -11,5 +11,5 @@ ans1_x, ans1_y = zip(*data["ans1"])
 ans2_x, ans2_y = zip(*data["ans2"])
 
 plt.plot(ans1_x, ans1_y, "r,")
-plt.plot(ans2_x, ans2_y, "ko")
+plt.plot(ans2_x, ans2_y, "k.")
 plt.show()
