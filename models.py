@@ -16,13 +16,16 @@ Dot = np.array
 class Field:
     def __init__(self, dimensions, *initial_objects):
         self.size = dimensions
-        self.objects = initial_objects
+        self.objects = list(initial_objects)
     
     def __iadd__(self, obj):
         self.objects.append(obj)
     
     def add(self, obj):
         self.objects.append(obj)
+    
+    def extend(self, objs):
+        self.objects.extend(objs)
     
     def epoch(self):
         for obj in self.objects:
@@ -36,12 +39,12 @@ class Object:
     """
     Abstract Object class.
     """
-    def __init__(self, mass, coords=(0., 0.), speed=(0., 0.), id=-1):
+    def __init__(self, mass=1, coords=(0., 0.), velocity=(0., 0.), id=-1):
         self.mass = mass
         self.center = Dot(coords)
         self.id = id
         self.acceleration = np.array((0., 0.))
-        self.speed = speed
+        self.velocity = velocity
     
     def __vectorize(self, obj):
         return  np.array(obj.center) - np.array(self.center)
@@ -63,8 +66,8 @@ class Object:
                 self.acceleration = self.acceleration + force_vector/self.mass
         
     def refresh(self):
-        self.speed = self.speed + (self.acceleration*CONST.TAU)
-        self.center = self.center + self.speed*CONST.TAU
+        self.velocity = self.velocity + (self.acceleration*CONST.TAU)
+        self.center = self.center + self.velocity*CONST.TAU
         self.acceleration = np.array((0., 0.))
     
     def __repr__(self):
@@ -73,15 +76,14 @@ class Object:
 
 if __name__ == "__main__":
     from json import dump
-    a = Object(1, coords=(300., 0.), speed=[1., 10.], id=1)
-    b = Object(100, coords=(300., 300.), id=2)
+    a = Object(1, coords=(300., 0.), speed=[30., 0.], id=1)
+    b = Object(1000, coords=(300., 100.), id=2)
     f = Field((100, 100), a, b)
     ans1, ans2 = [], []
-    for _ in range(2000):
-        print(a.speed, a.center)
+    for _ in range(1000):
+        #print(a.speed, a.center)
         ans1.append(list(a.center))
         ans2.append(list(b.center))
         f.epoch()
     with open("data.json", "w") as doc:
         dump({"ans1": ans1, "ans2": ans2}, doc)
-    import fast_render
