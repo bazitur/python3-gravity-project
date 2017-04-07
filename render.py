@@ -40,13 +40,13 @@ class RenderedField(Field):
         super().__init__(*args)
     
     def __render_trace(self, surf, obj):
-        for idx, coord in enumerate(obj.history[-300:]):
-            if idx != 299:
+        a = 100
+        for idx, coord in enumerate(obj.history[-a:]):
+            if idx != a-1:
                 pygame.draw.aaline(surf,
-                                   redistribute_rgb(*[(1+idx/100)*i for i in obj.color]),
+                                   redistribute_rgb(*[(4-idx/(a/3))*i for i in obj.color]),
                                    coord,
-                                   obj.history[-299+idx])
-        pygame.draw.aalines(surf, [0.5 * i for i in obj.color], False, obj.history[-300:])
+                                   obj.history[-a+1+idx])
     
     def render(self):
         global game_display
@@ -61,7 +61,7 @@ WIDTH, HEIGHT = 800, 600
 _title = 'Simulation'
 
 black, grey, white = (0, 0, 0), (150, 150, 150), (255, 255, 255)
-red, green, blue = (240, 0, 0), (0, 240, 0), (0, 0, 240)
+red, green, blue = (240, 15, 15), (0, 240, 0), (0, 0, 240)
 
 pygame.init()
 
@@ -69,10 +69,11 @@ game_display = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption(_title)
 clock = pygame.time.Clock()
 
-sat = RenderedObject(radius=5, color=red, mass=5, coords=(400., 100.), velocity=[20., 0.], id=1)
+msat = RenderedObject(radius=3, color=blue, mass=0.01, coords=(400., 120.), velocity=[15.67, 0.], id=0)
+sat = RenderedObject(radius=5, color=red, mass=10, coords=(400., 100.), velocity=[20., 0.], id=1)
 earth = RenderedObject(radius=25, mass=1000, coords=(400., 300.), id=2)
 
-field = RenderedField((WIDTH, HEIGHT), sat, earth)
+field = RenderedField((WIDTH, HEIGHT), msat, sat, earth)
 
 def main():
     main_loop = True
