@@ -39,10 +39,11 @@ class Object:
     """
     Abstract Object class.
     """
-    def __init__(self, mass=1, coords=(0., 0.), velocity=(0., 0.), id=-1):
+    def __init__(self, mass=1, coords=(0., 0.), velocity=(0., 0.), id=-1, moveable=True):
         self.mass = mass
         self.center = Dot(coords)
         self.id = id
+        self.moveable = moveable
         self.acceleration = np.array((0., 0.))
         self.velocity = velocity
     
@@ -67,7 +68,8 @@ class Object:
         
     def refresh(self):
         self.velocity = self.velocity + (self.acceleration*CONST.TAU)
-        self.center = self.center + self.velocity*CONST.TAU
+        if self.moveable:
+            self.center = self.center + self.velocity*CONST.TAU
         self.acceleration = np.array((0., 0.))
     
     def __repr__(self):
